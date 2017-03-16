@@ -720,7 +720,7 @@ function postAnnotations(url, postQuery) {
     }).then(() => {console.log('successfully submitted')}, () => {console.log('something wrong with submission')});
 }
 
-function submit(url, taModel, taView, taController) {
+function submit(url, assignmentId, taModel, taView, taController) {
     const feedBackText = $('#feedback').val();
 
     const numErrors = taView.highlightErrorMarks();
@@ -736,10 +736,14 @@ function submit(url, taModel, taView, taController) {
     else {
         const postDict = taModel.annotationDStoPostDict();
         postDict['feedBackText'] = feedBackText;
-        const queryString = $.param(postDict);
-        console.log(`post string: ${queryString}`)
-        const postPromise = postAnnotations(url, queryString);
-        postPromise.then(() => console.log('succesfully posted!'));
+        // const queryString = $.param(postDict);
+        // console.log(`post string: ${queryString}`)
+        // const postPromise = postAnnotations(url, queryString);
+        console.log(postDict);
+        $('#submit-form').attr('action', url);
+        $('#submit-form [type=text]').attr('name', 'data').attr('value', JSON.stringify(postDict));
+        $('#submit-form').submit();
+        // postPromise.then(() => console.log('succesfully posted!'));
     }
 
 }
@@ -761,6 +765,7 @@ var figerPromise, docPromise;
 $(document).ready( function() {
     const docURL = queryURL(window.location.href, 'doc_url');
     const postURL = queryURL(window.location.href, 'post_url');
+    const assignmentId = queryURL(window.location.href, 'assignmentId');
     console.log(`post_url : ${postURL}`);
 
     figerPromise = getFigerHier();
@@ -782,7 +787,10 @@ $(document).ready( function() {
             // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
             // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
 
-            $('#submit-button').on('click', () => submit(postURL, taModel, taView, taController));
+            if (assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE')
+                $('#submit-button').addClass('disabled')
+            else
+                $('#submit-button').on('click', () => submit(postURL, assignmentId, taModel, taView, taController));
         },
         () => { 
             //error handling if figer data is not loaded

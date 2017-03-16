@@ -720,7 +720,9 @@ function postAnnotations(url, postQuery) {
     }).then(() => {console.log('successfully submitted')}, () => {console.log('something wrong with submission')});
 }
 
-function submit(url, taModel, taView, taController, feedBackText) {
+function submit(url, taModel, taView, taController) {
+    const feedBackText = $('#feedback').val();
+
     const numErrors = taView.highlightErrorMarks();
     if (numErrors > 0) {
         const errTmpl = document.getElementById('error-template');
@@ -777,9 +779,8 @@ $(document).ready( function() {
             // taModel.fineTypeAdded.attach( (sender, args) => console.log(`fine type added: ${args.fineType}`) );
             // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
             // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
-            const feedBackText = $('#feedback').val();
 
-            $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController, feedBackText));
+            $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController));
         },
         () => { 
             //error handling if figer data is not loaded

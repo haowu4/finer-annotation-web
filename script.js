@@ -126,7 +126,7 @@ TAModel.prototype = {
         }
     },
 
-    annotationDStoString: function() {
+    annotationDStoPostDict: function() {
         let docJson = this._docJson;
         let annotationDS = this._annotationDS;
         let postDS = {};
@@ -137,7 +137,7 @@ TAModel.prototype = {
                 postDS[`${docJson['doc_id']}-${sIdx}-${ent.start}-${ent.end}`] = val;
             })
         });
-        return $.param(postDS);
+        return postDS;
     }
 
 }
@@ -717,10 +717,10 @@ function postAnnotations(url, postQuery) {
     return $.ajax({
         type: 'POST',
         url: `${url}?${postQuery}`
-    });
+    }).then(() => {console.log('successfully submitted')}, () => {console.log('something wrong with submission')});
 }
 
-function submit(url, taModel, taView, taController) {
+function submit(url, taModel, taView, taController, feedBackText) {
     const numErrors = taView.highlightErrorMarks();
     if (numErrors > 0) {
         const errTmpl = document.getElementById('error-template');
@@ -732,8 +732,11 @@ function submit(url, taModel, taView, taController) {
         $('#submit').prepend($errorbox);
     }
     else {
-        const annotationString = taModel.annotationDStoString();
-        const postPromise = postAnnotations(url, annotationString);
+        const postDict = taModel.annotationDStoPostDict();
+        postDict['feedBackText'] = feedBackText;
+        const queryString = $.param(postDict);
+        console.log(`post string: ${queryString}`)
+        const postPromise = postAnnotations(url, queryString);
         postPromise.then(() => console.log('succesfully posted!'));
     }
 
@@ -774,8 +777,9 @@ $(document).ready( function() {
             // taModel.fineTypeAdded.attach( (sender, args) => console.log(`fine type added: ${args.fineType}`) );
             // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
             // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
+            const feedBackText = $('#feedback').val();
 
-            $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController));
+            $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController, feedBackText));
         },
         () => { 
             //error handling if figer data is not loaded

@@ -122,7 +122,7 @@ TAModel.prototype = {
         }
     },
 
-    annotationDStoString: function () {
+    annotationDStoPostDict: function () {
         let docJson = this._docJson;
         let annotationDS = this._annotationDS;
         let postDS = {};
@@ -133,7 +133,7 @@ TAModel.prototype = {
                 postDS[`${docJson['doc_id']}-${sIdx}-${ent.start}-${ent.end}`] = val;
             });
         });
-        return $.param(postDS);
+        return postDS;
     }
 
 };
@@ -620,13 +620,15 @@ function getFigerHier(url = './figer_type_hier.json') {
     return $.ajax({
         type: 'GET',
         url: url,
-        dataType: 'jsonp'
+        dataType: 'json'
     }).then(response => {
         let typeHier = new Map();
         for (var i = 0; i < response.length; i++) typeHier.set(response[i][0], response[i][1]);
         let coarseToFine = getCoarseToFine(typeHier);
         return coarseToFine;
-    }, () => null);
+    }, () => {
+        console.log('figer promise failed');
+    });
 }
 
 function getDocument(url = './sample_doc.json') {
@@ -670,10 +672,16 @@ function postAnnotations(url, postQuery) {
     return $.ajax({
         type: 'POST',
         url: `${url}?${postQuery}`
+    }).then(() => {
+        console.log('successfully submitted');
+    }, () => {
+        console.log('something wrong with submission');
     });
 }
 
 function submit(url, taModel, taView, taController) {
+    const feedBackText = $('#feedback').val();
+
     const numErrors = taView.highlightErrorMarks();
     if (numErrors > 0) {
         const errTmpl = document.getElementById('error-template');
@@ -681,8 +689,11 @@ function submit(url, taModel, taView, taController) {
         $errorbox.find('div.alert').append(`Please finish the annotations and submit again (Click instructions for help. Incomplete ones are highlighted above)!`).attr('id', 'submit-error');
         $('#submit').prepend($errorbox);
     } else {
-        const annotationString = taModel.annotationDStoString();
-        const postPromise = postAnnotations(url, annotationString);
+        const postDict = taModel.annotationDStoPostDict();
+        postDict['feedBackText'] = feedBackText;
+        const queryString = $.param(postDict);
+        console.log(`post string: ${queryString}`);
+        const postPromise = postAnnotations(url, queryString);
         postPromise.then(() => console.log('succesfully posted!'));
     }
 }
@@ -698,11 +709,14 @@ function queryURL(url, name) {
 
 var taModel, taView, tAWindowView, taController;
 var debug = {};
+var figerPromise, docPromise;
 $(document).ready(function () {
     const docURL = queryURL(window.location.href, 'doc_url');
+    const postURL = queryURL(window.location.href, 'post_url');
+    console.log(`post_url : ${postURL}`);
 
-    let figerPromise = getFigerHier();
-    let docPromise = getDocument(docURL);
+    figerPromise = getFigerHier();
+    docPromise = getDocument(docURL);
 
     console.log(`trying to fetch doc at ${docURL}`);
 
@@ -719,7 +733,7 @@ $(document).ready(function () {
         // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
         // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
 
-        $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController));
+        $('#submit-button').on('click', () => submit(postURL, taModel, taView, taController));
     }, () => {
         //error handling if figer data is not loaded
         console.log(`some error. Sorry couldn't load`);

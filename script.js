@@ -761,6 +761,7 @@ var figerPromise, docPromise;
 $(document).ready( function() {
     const docURL = queryURL(window.location.href, 'doc_url');
     const postURL = queryURL(window.location.href, 'post_url');
+    console.log(`post_url : ${post_url}`);
 
     figerPromise = getFigerHier();
     docPromise = getDocument(docURL);

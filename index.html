@@ -19,32 +19,86 @@
 
     <link rel="stylesheet" type="text/css" href="style.css">
 
-    <!-- <script type="text/javascript" src="script.js" defer></script> -->
   </head>
   <body>
     <div class="container">
         <div class="jumbotron">
-            <h1 class="text-center">Fine-Type Annotation Interface</h1>
-        </div>
-        <div id="instructions-header" class="section-header page-header"
-             onclick="toggleMenu($(this), 'instructions')">
-            <h2> <span class="glyphicon glyphicon-menu-down section-glyphicon"></span> Instructions</h2>
-        </div>
-        <div id="instructions" class="section-content collapsible-block open-block">
-            <div>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam voluptas, quaerat commodi minima ipsam eligendi atque eaque. Neque dolorum nulla voluptatum in, nemo magni sunt voluptate amet hic molestias aspernatur.
-            </div>
+            <h1 class="text-center">Type Annotatation Task</h1>
         </div>
 
-        <div id="document-header" class="section-header page-header"
-             onclick="toggleMenu($(this), 'document')">
-            <h2> <span class="glyphicon glyphicon-menu-down section-glyphicon"></span> Document</h2>
+        <!-- Trigger the modal with a button -->
+        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#instructionsModal">Click for Instructions</button>
+
+        <!-- Modal -->
+        <div id="instructionsModal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Instructions</h4>
+                </div>
+                <div class="modal-body">
+                    <!--<p>Some text in the modal.</p>-->
+                    <ul>
+                        <li>
+
+                            You will be given a document with each entity (phrase) highlighted. The goal is to click on them, and select the types (categories),
+                            that best categorize the entity mentioned in the sentence. For example:
+                            <img src="https://s3.amazonaws.com/finer-annotation/type-annotation.png" style="width:100%;">
+                            
+
+
+                        </li>
+                        <li>
+                            For each entity, you need to select at-least one <b>Coarse Type</b> (Note that <b>No Type</b> is acceptable too). After you select the
+                            <b>Coarse Type</b>, you will be presented with more fine-grained types - <b>Fine Types</b>. Note that here multiple fine types might
+                            be applicable as shown in the figure above. Select at-least one (Note that <b>No Type</b> is acceptable too)
+                        </li>
+                        <li>While selecting fine-grained types, select as many as applicable.</li>
+
+                        <li>
+                            <div class="btn btn-primary btn-outline coarse-type">WORK</div> refers to all artworks, books, movies, newspaper and other similar creations (works by 
+                            people). For example:
+                            <b>Mona Lisa</b>, <b>the Times</b>, <b>the Godfather</b> etc.
+
+                        </li>
+
+                        <li>
+                            <div class="btn btn-primary btn-outline coarse-type">TIME</div> is phrase describing time. For example: <b>1990</b>, <b>last Tuesday</b> etc.
+
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+
+            </div>
+        </div>
+              
+
+        <div id="document-header" class="section-header page-header">
+            <h2>Document</h2>
         </div>
         <div id="document" class="section-content collapsible-block open-block">
             <!-- <button id="load-doc" type="button" class="btn btn-default"
                     style="background-color: inherit" 
                     onclick="">Load document</button> -->
-            <div id="doc-view" class="entities"></div>
+            <div id="doc-view"></div>
+        </div>
+        <form>
+            <div style="font-size: 16px" class="form-group">
+                <label for="feedback">Feedback:</label> <span> (Any feedback less than 250 characters about the task if welcome)</span>
+                <textarea class="form-control" rows="5" id="feedback" maxlength="250"></textarea>
+            </div>
+        </form>
+        <div id="submit">
+            <button type="button" id="submit-button" class="btn btn-primary" aria-label="Left Align">
+                <span class="glyphicon" aria-hidden="true">Submit</span>
+            </button>
         </div>
 
     </div>
@@ -61,7 +115,7 @@
     </template>
 
     <template id="type-list-item-template">
-        <div class="btn btn-primary btn-outline" onclick="onTypeClick($(this))"></li>
+        <div class="btn btn-primary btn-outline" onclick=""></li>
     </template>
 
     <template id="type-row-template">
@@ -69,393 +123,38 @@
             <div class="col-xs-6" id="coarse-types-col">
                 <div class="col-heading">Coarse type</div>
                 <div class="col-content"></div>
-            </div>
-            <div class="col-xs-6" id="fine-types-col">
+            </div><!--
+            --><div class="col-xs-6" id="fine-types-col">
                 <div class="col-heading">No Coarse type selected</div>
                 <div class="col-content"></div>
             </div>
         </div>
     </template>
 
+    <template id="info-template">
+        <div class="alert alert-warning" role="alert">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <span class="sr-only">Info:</span>
+        </div>
+    </template>
+
+    <template id="error-template">
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+        </div>
+    </template>
+
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://fastcdn.org/Underscore.js/1.8.3/underscore-min.js"></script>
+    <!--<script src="https://fastcdn.org/Underscore.js/1.8.3/underscore-min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
+    <script type="text/javascript" src="script.js" defer></script>
 
-
-    <script type="text/javascript">
-
-        function toggleTypeButton($btn) {
-            if (!$btn.hasClass('disabled'))
-                $btn.toggleClass('btn-primary btn-success selected');
-        }
-
-        // function unSelectTypeButton($btn) {
-        //     if (!$btn.hasClass('disabled') && $btn.hasClass('selected'))
-        //         $btn.toggleClass('btn-primary btn-success selected');
-        // }
-
-        function loadFineTypeHtml($parent, coarseType) {
-            var liTmpl = document.getElementById('type-list-item-template');
-            _.each(globalStore.coarseToFine[coarseType], function(fineType) {
-                var $li = $(liTmpl.content.cloneNode(true)); 
-                $li.find('div.btn').attr('value', fineType).addClass('fine-type').text(fineType.split('.').pop().toUpperCase());
-                $parent.append($li);
-            });
-        }
-
-        function onCoarseTypeClick($liCoarse) {
-            toggleTypeButton($liCoarse);
-            var coarseType = $liCoarse.attr('value');
-            $fineCol = $liCoarse.closest('.type-row').find('#fine-types-col');
-            $fineCol.find('.col-heading').text(coarseType + ' types');
-            $fineCol.find('.col-content').empty();
-            if ($liCoarse.hasClass('selected')) {
-                // remove selected for any other coarse type
-                $liCoarse.siblings('div.btn').each(function(i, thatliCoarse) {
-                    var $thatliCoarse = $(thatliCoarse);
-                    if (thatliCoarse != $liCoarse[0] && $thatliCoarse.hasClass('selected'))
-                        toggleTypeButton($thatliCoarse);
-                });
-                
-                loadFineTypeHtml($fineCol.find('.col-content'), coarseType);
-            }
-            else {
-                $fineCol.find('.col-heading').text('No coarse type selected');
-            }
-        }
-
-        function onFineTypeClick($liFine) {
-            toggleTypeButton($liFine);
-        }
-
-        function onTypeClick($li) {
-            if ($li.hasClass('coarse-type'))
-                onCoarseTypeClick($li);
-            else if ($li.hasClass('fine-type'))
-                onFineTypeClick($li);
-            else
-                console.log('Neither coarse nor fine!!');
-        }
-
-        function toggleMenu($node, collapseId) {
-            $('#' + collapseId).toggleClass('open-block');
-            $node.find('.glyphicon').toggleClass('glyphicon-menu-down glyphicon-menu-up');
-        }
-
-        function getCoarseToFine(typeHier) {
-            // given the type-hier as presented in figer_type_hier.json,
-            // creates a dictionary from coarse types to all its fine-types
-            var getCoarse = function(type) {
-                while (typeHier.get(type)['parent'] != null)
-                    type = typeHier.get(type)['parent'];
-                return type;
-            }
-            coarseToFine = {};
-            for (var [type, properties] of typeHier) {
-                if (typeHier.has(type)) {
-                    var coarse = getCoarse(type);
-                    // add coarse type to dictionary
-                    if (!coarseToFine[coarse])
-                        coarseToFine[coarse] = []
-                    // if this is a fine type add this to the coarse type list
-                    if (typeHier.get(type)['parent'] != null)
-                        coarseToFine[coarse].push(type)
-                }
-            }
-            // sort the fine-types for each coarse type
-            _.each(coarseToFine, function(fineTypes, coarseType) { fineTypes.sort() });
-            return coarseToFine;
-        }
-
-        function loadFigerHier() {
-
-            var httpRequest = new XMLHttpRequest();
-
-            if (!httpRequest) {
-              alert('Giving up :( Cannot create an XMLHTTP instance');
-              return false;
-            }
-
-            httpRequest.onreadystatechange = function() {
-                if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                    if (httpRequest.status === 200) {
-                        var response = JSON.parse(httpRequest.responseText);
-                        var typeHier = new Map();
-                        for (var i = 0; i < response.length; i++)
-                            typeHier.set(response[i][0], response[i][1]);
-                        globalStore.typeHier = typeHier;
-                        globalStore.coarseToFine = getCoarseToFine(typeHier);
-                    } else {
-                        alert('There was a problem with the figer-hier request.');
-                    }
-                }
-            };
-            httpRequest.open('GET', './figer_type_hier.json', false);
-            httpRequest.send(null);
-
-            console.log('XMLHttpRequest for figer-hier sent.');
-        }
-
-        function getSentenceHTMLElement(sentence) {
-            // return string constructed with tokens and spaces in [start, end)
-            function getTextFromSpanForTokenSpaces(tokenSpaces, start, end) {
-                return tokenSpaces.slice(start, end).reduce(function(acc, tokenSpace) {
-                    return acc + tokenSpace[0] + tokenSpace[1];
-                }, "");
-            }
-
-            var wrapTextInMark = function(text, eIdx) {
-                return ('<mark onclick="onMarkClick($(this))" data-entity="" ent-id=' + eIdx + ' >' + text + '</mark>')
-            };
-
-            // tuples of tokens, spaces ( => zip(tokens, spaces) )
-            var tokenSpaces;
-            if (sentence.spaces == undefined)
-                tokenSpaces = _.map(sentence.tokens, function(t) { return [t, " "]; });
-            else
-                tokenSpaces = sentence.tokens.map(
-                    function(t, i) { return [t, sentence.spaces[i]]; });
-
-            // clojure
-            var getTextFromSpan = function(start, end) {
-                return getTextFromSpanForTokenSpaces(tokenSpaces, start, end);}
-
-            var sentLen = tokenSpaces.length;
-            var ents = sentence.ents;
-
-            var sentNode = document.createElement('div');
-            // now populate sentNode with sentence contents by iterating through ents
-            if (ents.length == 0)
-                sentNode.innerText = getTextFromSpan(0, sentLen);
-            else {
-                var sentInnerHTML = "";
-                var lastEntEnd = 0;
-                _.each(ents, function(ent, eIdx) {
-                    // add text before the entity
-                    sentInnerHTML += getTextFromSpan(lastEntEnd, ent.start);
-                    sentInnerHTML += wrapTextInMark(getTextFromSpan(ent.start, ent.end), eIdx);
-                    lastEntEnd = ent.end;
-                });
-                // add text after the last entity
-                sentInnerHTML += getTextFromSpan(lastEntEnd, sentLen);
-                sentNode.innerHTML = sentInnerHTML;
-            }
-            return sentNode;
-        }
-
-        function getDocHTMLNode(docJson) {
-            // listItem template
-            var sentTmpl = document.getElementById('sentence-template');
-            var $group = $('<div>', {'class': 'list-group'});
-
-            _.each(docJson['sentences'], function(sentence, sIdx) {
-                var $sc = $(sentTmpl.content.cloneNode(true));
-                $sc.find('div.sentence-content')
-                    .append(getSentenceHTMLElement(sentence));
-                $sc.find('span.sentence-list-index').text(parseInt(sIdx)+1)
-
-                var $li = $('<div>', {'class': 'list-group-item'}).append($sc).attr('id', 'sentence-'+sIdx);
-                $group.append($li);
-            });
-            return $group[0];
-        }
-
-        function renderDocInNode(docJson, node) {
-            var docHtml = getDocHTMLNode(docJson);
-            $(node).append(docHtml);
-        }
-
-        function getTypeOptionsHTMLNode(coarseToFine) {
-            var $root = $($.parseHTML('<div class="type-select-wrapper" id="type-window"></div>'));
-            var curColsCount = 0;
-            var liTmpl = document.getElementById('type-list-item-template');
-
-            var $typerow = $(document.getElementById('type-row-template').content.cloneNode(true));
-            var $colcontent = $typerow.find('#coarse-types-col .col-content');
-
-            // sort 'em
-            var coarseTypes = _.sortBy(_.keys(coarseToFine), function(t) {
-                return -coarseToFine[t].length});
-
-            _.each(coarseTypes, function(coarseType) {
-                var $li = $(liTmpl.content.cloneNode(true)); 
-                $li.find('div.btn').attr('value', coarseType).addClass('coarse-type').text(coarseType.toUpperCase());
-                $colcontent.append($li);
-            });
-
-            $root.append($typerow);
-            return $root;
-        }
-
-
-        function addAnnotationsToTypeWindow($typeWindow, sIdx, eIdx) {
-            var coarseType = globalStore.docAnnots[sIdx][eIdx]['coarse-type'];
-            var $typeWindow = globalStore.$typeWindow;
-
-            // clear previous annotations
-            $typeWindow.find('div#coarse-types-col div.btn').each(function(index, el) {
-                if ($(el).hasClass('selected'))
-                    onCoarseTypeClick($(el));
-            });
-
-            if (!coarseType) return;
-            onCoarseTypeClick($typeWindow.find('div#coarse-types-col div[value="' + coarseType + '"]'));
-            var fineTypes = globalStore.docAnnots[sIdx][eIdx]['fine-types'];
-            _.each(fineTypes, function(fineType) {
-                onFineTypeClick($typeWindow.find('div#fine-types-col div[value="' + fineType + '"]'));
-            });
-        }
-
-        function showTypeAnnotationWindow(sIdx, eIdx) {
-            if (!globalStore.$typeWindow)
-                globalStore.$typeWindow = getTypeOptionsHTMLNode(globalStore.coarseToFine);
-
-            var $typeWindow = globalStore.$typeWindow;
-            addAnnotationsToTypeWindow($typeWindow, sIdx, eIdx);
-
-            var curEntSelected = globalStore.curEntSelected;
-            
-            var hidePromise = hideTypeAnnotationWindow();
-            var showPromise = hidePromise.then( function() {
-                $('#sentence-' + sIdx).append($typeWindow);
-                $typeWindow.hide();
-                $typeWindow.slideDown(100);
-                return $typeWindow.promise();
-            });
-
-            return showPromise;
-        }
-
-
-        function hideTypeAnnotationWindow() {
-            var $typeWindow = globalStore.$typeWindow;
-            $typeWindow.slideUp(0);
-            var hidePromise = $typeWindow.promise();
-            hidePromise.done(function() {$typeWindow.remove()});
-            return hidePromise;
-        }
-
-
-        function saveCurAnnotations() {
-            var $typeWindow = globalStore.$typeWindow;
-            if (globalStore.curEntSelected == undefined || $typeWindow[0] == undefined)
-                return;
-            var curEntSelected = globalStore.curEntSelected
-
-            var $coarseTypesSelected = $typeWindow.find('div#coarse-types-col div.btn.selected');
-            var $fineTypesSelected = $typeWindow.find('div#fine-types-col div.btn.selected');
-
-            if ($coarseTypesSelected.length > 0) {
-                var selectedCoarseType = $coarseTypesSelected[0].getAttribute('value');
-                globalStore.docAnnots[curEntSelected.sIdx][curEntSelected.eIdx]['coarse-type'] = selectedCoarseType;
-                if ($fineTypesSelected.length > 0) {
-                    var selectedFineTypes = $fineTypesSelected.map(function (index, div) {return div.getAttribute('value')});
-                    globalStore.docAnnots[curEntSelected.sIdx][curEntSelected.eIdx]['fine-types'] = selectedFineTypes;
-                }
-            }
-        }
-
-
-        function clearHiglightedMark() {
-            // clears the highlight of the current highlighted mark
-            if (globalStore.curEntSelected != undefined) {
-                var curEntSelected = globalStore.curEntSelected;
-                $(`div#sentence-${curEntSelected.sIdx} mark[ent-id=${curEntSelected.eIdx}]`).removeClass('selected');
-            }
-        }
-
-
-        function onMarkClick($mark) {
-            var eIdx = parseInt($mark.attr('ent-id'));
-            var sIdx = parseInt($mark.closest('div.list-group-item').attr('id').split('-').pop());
-
-            // if closing
-            if ($mark.hasClass('selected')) {
-                $mark.removeClass('selected');
-                saveCurAnnotations();
-                hideTypeAnnotationWindow();
-                globalStore.curEntSelected = null;
-            }
-            else {
-                saveCurAnnotations();
-                showTypeAnnotationWindow(sIdx, eIdx);
-                $mark.addClass('selected');
-                clearHiglightedMark();
-                globalStore.curEntSelected = {sIdx: sIdx, eIdx: eIdx};
-            }
-        }
-
-
-        function getAnnotationDataStructure(docJson) {
-            var docAnnots = {};
-            _.each(docJson['sentences'], function(sentence, sIdx) {
-                if (sentence.ents.length > 0) {
-                    docAnnots[sIdx] = {};
-                    _.each(sentence.ents, function(ent, eIdx) {
-                        docAnnots[sIdx][eIdx] = {'coarse-type': null, 'fine-types': [], 'coref': undefined};
-                    });
-                }
-            });
-            return docAnnots;
-        } 
-
-
-        function loadDocument() {
-            $.ajax({
-                url: './sample_doc.json',
-                dataType: 'json',
-                success: function(data) {
-                    // sort ents in each sentece by start
-                    _.each(data['sentences'], function(sentence) {
-                        sentence.ents.sort(function(e1, e2) {
-                            return e1.start - e2.start});
-                    });
-                    // validate data and not load if incorrect
-                    globalStore.docJson = data;
-                    globalStore.docAnnots = getAnnotationDataStructure(data);
-                    // render document
-                    renderDocInNode(data, $('div#doc-view'));
-                },
-                error: function(data) {
-                    globalStore.docJson = null;
-                }
-            });
-        }
-
-        function getParameterByName(name, url) {
-            if (!url) {
-              url = window.location.href;
-            }
-            name = name.replace(/[\[\]]/g, "\\$&");
-            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-                results = regex.exec(url);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, " "));
-        }
-
-        function getMTurkParams() {
-            var params = {};
-            params.assignmentId = getParameterByName('assignmentId');
-            params.workerId = getParameterByName('workerId');
-            params.hitId = getParameterByName('hitId');
-            params.turkSubmitTo = getParameterByName('turkSubmitTo');
-            return params;
-        }
-
-
-        var globalStore = {};
-        $(document).ready( function() {
-            loadFigerHier();
-            loadDocument();
-            globalStore.mTurkParams = getMTurkParams();
-            globalStore.preview_id = 'ASSIGNMENT_ID_NOT_AVAILABLE';
-        });
-    </script>
 
   </body>
 </html>

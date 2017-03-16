@@ -608,7 +608,7 @@ function getCoarseToFine(typeHier) {
     }
     // sort the fine-types for each coarse type
     _.each(coarseToFine, function (fineTypes, coarseType) {
-        fineTypes.sort();
+        coarseToFine[coarseType] = _.sortBy(fineTypes, [t => t.split('.').pop()]);
     });
     return coarseToFine;
 }

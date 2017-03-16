@@ -760,6 +760,7 @@ var debug = {};
 var figerPromise, docPromise;
 $(document).ready( function() {
     const docURL = queryURL(window.location.href, 'doc_url');
+    const postURL = queryURL(window.location.href, 'post_url');
 
     figerPromise = getFigerHier();
     docPromise = getDocument(docURL);
@@ -780,7 +781,7 @@ $(document).ready( function() {
             // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
             // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
 
-            $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController));
+            $('#submit-button').on('click', () => submit(postURL, taModel, taView, taController));
         },
         () => { 
             //error handling if figer data is not loaded

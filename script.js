@@ -768,6 +768,7 @@ $(document).ready( function() {
     const postURL = queryURL(window.location.href, 'post_url');
     const assignmentId = queryURL(window.location.href, 'assignmentId');
     console.log(`post_url : ${postURL}`);
+    console.log(`assignmentId : ${assignmentId}`);
 
     figerPromise = getFigerHier();
     docPromise = getDocument(docURL);

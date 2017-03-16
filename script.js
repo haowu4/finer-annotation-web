@@ -754,6 +754,8 @@ $(document).ready( function() {
     let figerPromise = getFigerHier();
     let docPromise = getDocument(docURL);
 
+    console.log(`trying to fetch doc at ${docURL}`);
+
     $.when( figerPromise, docPromise ).then(
         ( coarseToFine, docJson ) => {
 
@@ -772,6 +774,7 @@ $(document).ready( function() {
         },
         () => { 
             //error handling if figer data is not loaded
+            console.log(`some error. Sorry couldn't load`)
         }
     );
 });

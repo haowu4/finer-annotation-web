@@ -702,6 +702,8 @@ $(document).ready(function () {
     let figerPromise = getFigerHier();
     let docPromise = getDocument(docURL);
 
+    console.log(`trying to fetch doc at ${docURL}`);
+
     $.when(figerPromise, docPromise).then((coarseToFine, docJson) => {
 
         taModel = new TAModel(docJson, coarseToFine);
@@ -718,5 +720,6 @@ $(document).ready(function () {
         $('#submit-button').on('click', () => submit('http://localhost:8000', taModel, taView, taController));
     }, () => {
         //error handling if figer data is not loaded
+        console.log(`some error. Sorry couldn't load`);
     });
 });

@@ -752,11 +752,12 @@ function queryURL(url, name) {
 
 var taModel, taView, tAWindowView, taController;
 var debug = {};
+var figerPromise, docPromise;
 $(document).ready( function() {
     const docURL = queryURL(window.location.href, 'doc_url');
 
-    let figerPromise = getFigerHier();
-    let docPromise = getDocument(docURL);
+    figerPromise = getFigerHier();
+    docPromise = getDocument(docURL);
 
     console.log(`trying to fetch doc at ${docURL}`);
 

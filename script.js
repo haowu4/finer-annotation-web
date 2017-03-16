@@ -666,7 +666,9 @@ function getFigerHier(url='./figer_type_hier.json') {
             let coarseToFine = getCoarseToFine(typeHier);
             return coarseToFine;
         },
-        () => null
+        () => {
+            console.log('figer promise failed');
+        }
     );
 }
 

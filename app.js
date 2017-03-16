@@ -696,7 +696,8 @@ function submit(url, assignmentId, taModel, taView, taController) {
         // const postPromise = postAnnotations(url, queryString);
         console.log(postDict);
         $('#submit-form').attr('action', url);
-        $('#submit-form [type=text]').attr('name', 'data').attr('value', JSON.stringify(postDict));
+        $('#submit-form [name=assignmentId]').attr('value', assignmentId);
+        $('#submit-form [name=data]').attr('value', JSON.stringify(postDict));
         $('#submit-form').submit();
         // postPromise.then(() => console.log('succesfully posted!'));
     }

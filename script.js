@@ -657,7 +657,7 @@ function getFigerHier(url='./figer_type_hier.json') {
     return $.ajax({
         type: 'GET',
         url: url,
-        dataType: 'jsonp'
+        dataType: 'json'
     }).then(
         (response) => {
             let typeHier = new Map();

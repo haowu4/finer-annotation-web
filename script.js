@@ -685,7 +685,9 @@ function getDocument(url='./sample_doc.json') {
             // validate data and not load if incorrect
             return response;
         },
-        () => null
+        () => {
+            console.log(`encountered error while loading ${url}`);
+        }
     );
 }
 

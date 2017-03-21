@@ -31,6 +31,7 @@
         "time",
         {
             "parent": null,
+            "alias" : "date/time",
             "is_figer_type": true
         }
     ],
@@ -45,6 +46,7 @@
         "work",
         {
             "parent": null,
+            "alias" : "word/creation",
             "is_figer_type": false
         }
     ],
@@ -171,6 +173,7 @@
         "person.soldier",
         {
             "parent": "person",
+            "alias" : "military_personel",
             "is_figer_type": true
         }
     ],

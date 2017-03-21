@@ -46,7 +46,7 @@
         "work",
         {
             "parent": null,
-            "alias" : "word/creation",
+            "alias" : "work/creation",
             "is_figer_type": false
         }
     ],

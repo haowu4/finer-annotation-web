@@ -668,8 +668,9 @@ function getFigerHier(url='./figer_type_hier.json') {
             let coarseToFine = getCoarseToFine(typeHier);
             return coarseToFine;
         },
-        () => {
-            console.log('figer promise failed');
+        (jqxhr,textStatus,errorThrown) => {
+            console.log('figer-hier promise failed');
+            console.log(`textStatus - ${textStatus}, errorThrown - ${errorThrown}`);
         }
     );
 }
@@ -689,8 +690,9 @@ function getDocument(url='./sample_doc.json') {
             // validate data and not load if incorrect
             return response;
         },
-        () => {
-            console.log(`encountered error while loading ${url}`);
+        (jqxhr,textStatus,errorThrown) => {
+            console.log(`getDocument promise failed - encountered error while loading ${url}`);
+            console.log(`textStatus - ${textStatus}, errorThrown - ${errorThrown}`);
         }
     );
 }

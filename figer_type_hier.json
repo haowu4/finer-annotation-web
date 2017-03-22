@@ -24,6 +24,7 @@
         "building",
         {
             "parent": null,
+            "alias" : "structure/building/facility",
             "is_figer_type": true
         }
     ],
@@ -31,6 +32,7 @@
         "time",
         {
             "parent": null,
+            "alias" : "date/time",
             "is_figer_type": true
         }
     ],
@@ -38,6 +40,7 @@
         "product",
         {
             "parent": null,
+            "alias" : "product/vehicle/device",
             "is_figer_type": true
         }
     ],
@@ -45,6 +48,7 @@
         "work",
         {
             "parent": null,
+            "alias" : "work(book,art)/creation",
             "is_figer_type": false
         }
     ],
@@ -66,6 +70,7 @@
         "finance.currency",
         {
             "parent": null,
+            "alias" : "currency/money",
             "is_figer_type": true
         }
     ],
@@ -136,6 +141,7 @@
         "person.director",
         {
             "parent": "person.artist",
+            "alias" : "movie/play director",
             "is_figer_type": true
         }
     ],
@@ -171,6 +177,7 @@
         "person.soldier",
         {
             "parent": "person",
+            "alias" : "military personel",
             "is_figer_type": true
         }
     ],
@@ -514,6 +521,7 @@
         "education.department",
         {
             "parent": "organization",
+            "alias" : "university/school department",
             "is_figer_type": true
         }
     ],
@@ -682,6 +690,7 @@
         "ethnicity",
         {
             "parent": null,
+            "alias" : "ethnicity/race/caste",
             "is_figer_type": true
         }
     ],
@@ -696,6 +705,7 @@
         "astral_body",
         {
             "parent": "geography",
+            "alias" : "astronomical object",
             "is_figer_type": true
         }
     ],

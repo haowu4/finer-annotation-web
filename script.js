@@ -13,17 +13,17 @@ function Event(sender) {
 }
 
 Event.prototype = {
-    attach : function (listener) {
+    attach: function(listener) {
         this._listeners.push(listener);
     },
-    notify : function (args) {
+    notify: function(args) {
         var index;
 
         for (index = 0; index < this._listeners.length; index += 1) {
             this._listeners[index](this._sender, args);
         }
     },
-    forwardEvent : function (nextEvent) {
+    forwardEvent: function(nextEvent) {
         // forwards this events notifications to the nextEvent
         this.attach((sender, args) => nextEvent.notify(args));
     }
@@ -37,11 +37,12 @@ End of Event definition
 
 /*
 Type Annotation Model
-*/ 
+*/
 
-function TAModel(docJson, coarseToFine) {
+function TAModel(docJson, coarseToFine, typeAlias) {
     this._docJson = docJson;
     this._coarseToFine = coarseToFine;
+    this._typeAlias = typeAlias;
     this._annotationDS = getAnnotationDS(docJson);
 
     this.coarseTypeAdded = new Event(this);
@@ -55,12 +56,12 @@ TAModel.prototype = {
 
     get: function(sIdx, eIdx) {
         if (!this.checkValidIdxs(sIdx, eIdx)) return null;
-        return this._annotationDS[sIdx][eIdx]; 
+        return this._annotationDS[sIdx][eIdx];
     },
 
     checkValidIdxs: function(sIdx, eIdx) {
         return (!_.isUndefined(this._annotationDS[sIdx]) &&
-                !_.isUndefined(this._annotationDS[sIdx][eIdx]));
+            !_.isUndefined(this._annotationDS[sIdx][eIdx]));
     },
 
     checkValidCoarseType: function(coarseType) {
@@ -81,7 +82,11 @@ TAModel.prototype = {
 
             this._annotationDS[sIdx][eIdx].coarseType = coarseType;
 
-            const notifyObj = {sIdx: sIdx, eIdx: eIdx, coarseType: coarseType};
+            const notifyObj = {
+                sIdx: sIdx,
+                eIdx: eIdx,
+                coarseType: coarseType
+            };
             this.coarseTypeAdded.notify(notifyObj);
         }
     },
@@ -90,11 +95,15 @@ TAModel.prototype = {
         if (this.checkValidIdxs(sIdx, eIdx) &&
             this.checkValidCoarseType(coarseType) &&
             this._annotationDS[sIdx][eIdx].coarseType == coarseType) {
-            
+
             this._annotationDS[sIdx][eIdx].coarseType = null;
 
-            const notifyObj = {sIdx: sIdx, eIdx: eIdx, coarseType: coarseType};
-            this.coarseTypeRemoved.notify( notifyObj );
+            const notifyObj = {
+                sIdx: sIdx,
+                eIdx: eIdx,
+                coarseType: coarseType
+            };
+            this.coarseTypeRemoved.notify(notifyObj);
 
             this._annotationDS[sIdx][eIdx].fineTypes = [];
             this.fineTypesReset.notify(notifyObj);
@@ -103,25 +112,33 @@ TAModel.prototype = {
 
     setFineType: function(sIdx, eIdx, fineType) {
         if (this.checkValidIdxs(sIdx, eIdx)) {
-            const coarseType =  this._annotationDS[sIdx][eIdx].coarseType;
+            const coarseType = this._annotationDS[sIdx][eIdx].coarseType;
             if (this.checkValidFineType(coarseType, fineType) &&
                 !_.includes(this._annotationDS[sIdx][eIdx], fineType)) {
 
                 this._annotationDS[sIdx][eIdx].fineTypes.push(fineType);
-                this.fineTypeAdded.notify( {sIdx: sIdx, eIdx: eIdx, fineType: fineType} );
+                this.fineTypeAdded.notify({
+                    sIdx: sIdx,
+                    eIdx: eIdx,
+                    fineType: fineType
+                });
             }
         }
     },
 
     removeFineType: function(sIdx, eIdx, fineType) {
         if (this.checkValidIdxs(sIdx, eIdx)) {
-            const coarseType =  this._annotationDS[sIdx][eIdx].coarseType;
+            const coarseType = this._annotationDS[sIdx][eIdx].coarseType;
             if (this.checkValidFineType(coarseType, fineType)) {
 
                 const index = this._annotationDS[sIdx][eIdx].fineTypes.indexOf(fineType);
                 if (index == -1) return;
                 this._annotationDS[sIdx][eIdx].fineTypes.splice(index, 1);
-                this.fineTypeRemoved.notify( {sIdx: sIdx, eIdx: eIdx, fineType: fineType} );
+                this.fineTypeRemoved.notify({
+                    sIdx: sIdx,
+                    eIdx: eIdx,
+                    fineType: fineType
+                });
             }
         }
     },
@@ -161,7 +178,7 @@ function TAView(taModel, tAWindowView) {
     this._renderDocInNode(taModel._docJson, this._$docRoot);
     this._marksDict = this._createMarksDict(this._$docRoot);
 
-    this.tAWindowView = new TAWindowView(taModel._coarseToFine);
+    this.tAWindowView = new TAWindowView(taModel._coarseToFine, taModel._typeAlias);
 
     // events
     this.markClicked = new Event(this);
@@ -227,8 +244,7 @@ TAView.prototype = {
             if (_this.MarkStates.isSelect[markState]) {
                 _this.tAWindowView.attachToNode($(`div#sentence-${sIdx}`));
                 _this.tAWindowView.setSelected(this._taModel.get(sIdx, eIdx));
-            }
-            else {
+            } else {
                 _this.tAWindowView.removeFromDOM();
             }
         }
@@ -239,7 +255,11 @@ TAView.prototype = {
         _.each(marksDict, (nestedDict, sIdx) => {
             _.each(nestedDict, (mark, eIdx) => {
                 mark.node.on('click', function() {
-                    _this.markClicked.notify( {sIdx: sIdx, eIdx: eIdx, mark: mark} )
+                    _this.markClicked.notify({
+                        sIdx: sIdx,
+                        eIdx: eIdx,
+                        mark: mark
+                    })
                 })
             })
         });
@@ -256,14 +276,17 @@ TAView.prototype = {
     _createMarksDict: function($node) {
         let marksDict = {};
         const _this = this;
-        $node.find('mark[data-entity]').each( function(index, mark) {
+        $node.find('mark[data-entity]').each(function(index, mark) {
             let $mark = $(mark);
             let sIdx = $mark.attr('sent-id');
             let eIdx = $mark.attr('ent-id');
 
             if (!_.has(marksDict, sIdx)) marksDict[sIdx] = {};
-            marksDict[sIdx][eIdx] = {node: $mark, state: _this.MarkStates.UNSELECTED_NOTDONE};
-        } );
+            marksDict[sIdx][eIdx] = {
+                node: $mark,
+                state: _this.MarkStates.UNSELECTED_NOTDONE
+            };
+        });
         return marksDict;
     },
 
@@ -271,15 +294,15 @@ TAView.prototype = {
 
     _getSentenceHTMLElement: function(sentence, sIdx) {
         // return string constructed with tokens and spaces in [start, end)
-        const getTextFromSpanForTokenSpaces = (tsps, st, end) => 
+        const getTextFromSpanForTokenSpaces = (tsps, st, end) =>
             _(tsps).slice(st, end).reduce((acc, tsp) => (acc + tsp[0] + tsp[1]), '');
 
-        const wrapTextInMark = (text, eIdx) => 
+        const wrapTextInMark = (text, eIdx) =>
             (`<mark data-entity ent-id="${eIdx}" sent-id="${sIdx}">${text}</mark>`);
 
         // tuples of tokens, spaces ( => zip(tokens, spaces) )
         const tokens = _.map(sentence.tokens, renderChar);
-        const tokenSpaces = _.isUndefined(sentence.spaces) ? 
+        const tokenSpaces = _.isUndefined(sentence.spaces) ?
             _.map(tokens, (t) => [t, " "]) :
             _.zip(tokens, sentence.spaces);
 
@@ -311,17 +334,21 @@ TAView.prototype = {
     _getDocHTMLNode: function(docJson) {
         // listItem template
         const sentTmpl = document.getElementById('sentence-template');
-        let $group = $('<div>', {'class': 'list-group'});
+        let $group = $('<div>', {
+            'class': 'list-group'
+        });
 
         const _this = this;
         _.each(docJson['sentences'], (sentence, sIdx) => {
             let $sc = $(sentTmpl.content.cloneNode(true));
             $sc.find('div.sentence-content')
                 .append(_this._getSentenceHTMLElement(sentence, sIdx));
-            $sc.find('span.sentence-list-index').text(parseInt(sIdx)+1)
+            $sc.find('span.sentence-list-index').text(parseInt(sIdx) + 1)
 
-            let $li = $('<div>', {'class': 'list-group-item'}).
-                append($sc).attr('id', 'sentence-'+sIdx);
+            let $li = $('<div>', {
+                'class': 'list-group-item'
+            }).
+            append($sc).attr('id', 'sentence-' + sIdx);
             $group.append($li);
         });
         return $group[0];
@@ -341,8 +368,9 @@ Type Annotation Window View - the window which drops
 */
 
 
-function TAWindowView(coarseToFine) {
+function TAWindowView(coarseToFine, typeAlias) {
     this._coarseToFine = coarseToFine;
+    this._typeAlias = typeAlias;
 
     this.coarseTypeSelected = new Event(this);
     this.coarseTypeUnselected = new Event(this);
@@ -356,7 +384,7 @@ function TAWindowView(coarseToFine) {
     this._coarseSelected = null;
     this._attachedToDOM = false;
 
-    this._$typerow = this._getTypeOptionsHTMLNode(coarseToFine);
+    this._$typerow = this._getTypeOptionsHTMLNode(coarseToFine, typeAlias);
 }
 
 TAWindowView.prototype = {
@@ -420,16 +448,26 @@ TAWindowView.prototype = {
         const _this = this;
         if (_.has(this._coarseToFine, coarseType) && this._coarseToFine[coarseType].length > 0) {
             _.each(_.concat(this._coarseToFine[coarseType], NO_TYPE), (fineType) => {
-                $li = $(liTmpl.content.cloneNode(true)); 
-                $li.find('div.btn').attr('value', fineType).addClass('fine-type').text(fineType.split('.').pop().toUpperCase());
-                $li.find('div.btn').on( 'click', function() { _this._onFineTypeClick($(this)) } );
+                $li = $(liTmpl.content.cloneNode(true));
+    
+                var displayTypeName = fineType;
+                if (NO_TYPE != displayTypeName) {
+                    displayTypeName = this._typeAlias.get(displayTypeName);
+                }
+
+                displayTypeName = displayTypeName.split('.').pop();
+                displayTypeName = displayTypeName.toUpperCase();
+
+                $li.find('div.btn').attr('value', fineType).addClass('fine-type').text(displayTypeName);
+                $li.find('div.btn').on('click', function() {
+                    _this._onFineTypeClick($(this))
+                });
                 _this._fineTypeToNode[fineType] = $li.find('div.btn');
                 if (fineType == NO_TYPE)
                     $li.find('div.btn').addClass('no-type btn-warning').removeClass('btn-primary');
                 $node.append($li);
             });
-        }
-        else {
+        } else {
             const infoTmpl = document.getElementById('info-template');
             let $infobox = $(infoTmpl.content.cloneNode(true));
             $infobox.find('div.alert').append(`No Fine Types found for <strong>${coarseType}</strong>!`)
@@ -437,7 +475,7 @@ TAWindowView.prototype = {
         }
     },
 
-    _onCoarseTypeClick: function($liCoarse, notify=true) {
+    _onCoarseTypeClick: function($liCoarse, notify = true) {
         const _this = this;
 
         this._toggleTypeButton($liCoarse);
@@ -453,29 +491,36 @@ TAWindowView.prototype = {
                 if (thatliCoarse != $liCoarse[0] && $thatliCoarse.hasClass('selected'))
                     _this._toggleTypeButton($thatliCoarse);
             });
-            
+
             this._renderFineTypeHtmlInNode($fineCol.find('.col-content'), coarseType);
             if (notify)
-                this.coarseTypeSelected.notify({coarseType: coarseType});
-        }
-        else {
+                this.coarseTypeSelected.notify({
+                    coarseType: coarseType
+                });
+        } else {
             this._coarseSelected = null;
             $fineCol.find('.col-heading').text('No coarse type selected');
             if (notify)
-                this.coarseTypeUnselected.notify({coarseType: coarseType});
+                this.coarseTypeUnselected.notify({
+                    coarseType: coarseType
+                });
         }
     },
 
-    _onFineTypeClick: function($liFine, notify=true) {
+    _onFineTypeClick: function($liFine, notify = true) {
         this._toggleTypeButton($liFine);
         if (!notify) return;
         const fineType = $liFine.attr('value');
         $liFine.hasClass('selected') ?
-            this.fineTypeSelected.notify({fineType: fineType}) : 
-            this.fineTypeUnselected.notify({fineType: fineType});
+            this.fineTypeSelected.notify({
+                fineType: fineType
+            }) :
+            this.fineTypeUnselected.notify({
+                fineType: fineType
+            });
     },
 
-    _getTypeOptionsHTMLNode: function(coarseToFine) {
+    _getTypeOptionsHTMLNode: function(coarseToFine, typeAlias) {
         let $root = $($.parseHTML('<div class="type-select-wrapper" id="type-window"></div>'));
         let curColsCount = 0;
         const liTmpl = document.getElementById('type-list-item-template');
@@ -484,16 +529,25 @@ TAWindowView.prototype = {
         let $colcontent = $typerow.find('#coarse-types-col .col-content');
 
         let coarseTypesSorted = _.sortBy(_.keys(coarseToFine), function(t) {
-            return -coarseToFine[t].length});
+            return -coarseToFine[t].length
+        });
 
         var $li;
         const _this = this;
         _.each(_.concat(coarseTypesSorted, NO_TYPE), function(coarseType) {
-            $li = $(liTmpl.content.cloneNode(true)); 
-            $li.find('div.btn').attr('value', coarseType).addClass('coarse-type').text(coarseType.toUpperCase());
-            
-            $li.find('div.btn').on('click', function() { 
-                _this._onCoarseTypeClick($(this)) } );
+            $li = $(liTmpl.content.cloneNode(true));
+            var displayTypeName = coarseType;
+            if (NO_TYPE != displayTypeName) {
+                displayTypeName = typeAlias.get(displayTypeName);
+            }
+
+            displayTypeName = displayTypeName.toUpperCase();
+
+            $li.find('div.btn').attr('value', coarseType).addClass('coarse-type').text(displayTypeName);
+
+            $li.find('div.btn').on('click', function() {
+                _this._onCoarseTypeClick($(this))
+            });
             _this._coarseTypeToNode[coarseType] = $li.find('div.btn');
             if (coarseType == NO_TYPE)
                 $li.find('div.btn').addClass('no-type btn-warning').removeClass('btn-primary');
@@ -552,9 +606,7 @@ TAController.prototype = {
             const mark = _this._taView.getMark(sIdx, eIdx);
             if (mark.state != MarkStates.SELECTED) return;
             const curAnn = _this._taModel.get(sIdx, eIdx);
-            const nextState = isDone(curAnn)
-                                ? TAView.prototype.MarkStates.UNSELECTED_DONE
-                                : TAView.prototype.MarkStates.UNSELECTED_NOTDONE;
+            const nextState = isDone(curAnn) ? TAView.prototype.MarkStates.UNSELECTED_DONE : TAView.prototype.MarkStates.UNSELECTED_NOTDONE;
             _this._taView.setMarkStateAndRender(sIdx, eIdx, nextState);
         };
 
@@ -562,7 +614,10 @@ TAController.prototype = {
             const mark = _this._taView.getMark(sIdx, eIdx);
             if (mark.state == MarkStates.SELECTED) return;
             _this._taView.setMarkStateAndRender(sIdx, eIdx, MarkStates.SELECTED);
-            _this._markSelectedIdx = {sIdx: sIdx, eIdx: eIdx}
+            _this._markSelectedIdx = {
+                sIdx: sIdx,
+                eIdx: eIdx
+            }
         }
 
         // what to do on each mark state
@@ -570,14 +625,16 @@ TAController.prototype = {
             // unselect the mark
             unSelectMark(args.sIdx, args.eIdx);
             _this._markSelectedIdx = null;
-        }
-        else if (_.includes([MarkStates.UNSELECTED_NOTDONE, MarkStates.UNSELECTED_DONE, MarkStates.UNSELECTED_ERROR], mark.state)) {
+        } else if (_.includes([MarkStates.UNSELECTED_NOTDONE, MarkStates.UNSELECTED_DONE, MarkStates.UNSELECTED_ERROR], mark.state)) {
             // if some other mark selected, deselect it first
             if (!_.isNil(_this._markSelectedIdx)) {
                 unSelectMark(_this._markSelectedIdx.sIdx, _this._markSelectedIdx.eIdx);
             }
             selectMark(args.sIdx, args.eIdx);
-            this._markSelectedIdx = {sIdx: args.sIdx, eIdx: args.eIdx};
+            this._markSelectedIdx = {
+                sIdx: args.sIdx,
+                eIdx: args.eIdx
+            };
         }
     },
 
@@ -617,7 +674,10 @@ function getAnnotationDS(docJson) {
         if (sentence.ents.length > 0) {
             docAnnots[sIdx] = {};
             _.each(sentence.ents, (ent, eIdx) => {
-                docAnnots[sIdx][eIdx] = { 'coarseType': null, 'fineTypes': [] };
+                docAnnots[sIdx][eIdx] = {
+                    'coarseType': null,
+                    'fineTypes': []
+                };
             });
         }
     });
@@ -639,13 +699,13 @@ function getCoarseToFine(typeHier) {
             // add coarse type to dictionary
             if (!coarseToFine[coarse])
                 coarseToFine[coarse] = []
-            // if this is a fine type add this to the coarse type list
+                // if this is a fine type add this to the coarse type list
             if (typeHier.get(type)['parent'] != null)
                 coarseToFine[coarse].push(type)
         }
     }
     // sort the fine-types for each coarse type
-    _.each(coarseToFine, function(fineTypes, coarseType) { 
+    _.each(coarseToFine, function(fineTypes, coarseType) {
         coarseToFine[coarseType] = _.sortBy(fineTypes, [(t) => t.split('.').pop()]);
     });
     return coarseToFine;
@@ -655,7 +715,7 @@ function getCoarseToFine(typeHier) {
 // ----------------------------------------------------------------------
 
 
-function getFigerHier(url='./figer_type_hier.json') {
+function getFigerHier(url = './figer_type_hier.json') {
     return $.ajax({
         type: 'GET',
         url: url,
@@ -663,10 +723,23 @@ function getFigerHier(url='./figer_type_hier.json') {
     }).then(
         (response) => {
             let typeHier = new Map();
-            for (var i = 0; i < response.length; i++)
-                typeHier.set(response[i][0], response[i][1]);
-            let coarseToFine = getCoarseToFine(typeHier);
-            return coarseToFine;
+            let typeAlias = new Map();
+            for (var i = 0; i < response.length; i++) {
+                var type_id = response[i][0];
+                typeHier.set(type_id, response[i][1]);
+                // alias = response[i][1]["alias"];
+                if (_.has(response[i][1], "alias")) {
+                    typeAlias.set(type_id, response[i][1]["alias"]);
+                } else {
+                    typeAlias.set(type_id, type_id);
+                }
+
+            }
+            var coarseToFine = getCoarseToFine(typeHier);
+            return {
+                coarseToFine: coarseToFine,
+                typeAlias: typeAlias
+            };
         },
         (jqxhr,textStatus,errorThrown) => {
             console.log('figer-hier promise failed');
@@ -676,7 +749,7 @@ function getFigerHier(url='./figer_type_hier.json') {
 }
 
 
-function getDocument(url='./sample_doc.json') {
+function getDocument(url = './sample_doc.json') {
     return $.ajax({
         url: url,
         dataType: 'json'
@@ -685,7 +758,8 @@ function getDocument(url='./sample_doc.json') {
             // sort ents in each sentece by start
             _.each(response['sentences'], function(sentence) {
                 sentence.ents.sort(function(e1, e2) {
-                    return e1.start - e2.start});
+                    return e1.start - e2.start
+                });
             });
             // validate data and not load if incorrect
             return response;
@@ -698,19 +772,19 @@ function getDocument(url='./sample_doc.json') {
 }
 
 function renderChar(token) {
-    if(token == "-LCB-"){
+    if (token == "-LCB-") {
         return "{";
     }
 
-    if(token == "-RRB-"){
+    if (token == "-RRB-") {
         return ")";
     }
 
-    if(token == "-RCB-"){
+    if (token == "-RCB-") {
         return "}";
     }
 
-    if(token == "-LRB-"){
+    if (token == "-LRB-") {
         return "(";
     }
     return token;
@@ -721,7 +795,11 @@ function postAnnotations(url, postQuery) {
     return $.ajax({
         type: 'POST',
         url: `${url}?${postQuery}`
-    }).then(() => {console.log('successfully submitted')}, () => {console.log('something wrong with submission')});
+    }).then(() => {
+        console.log('successfully submitted')
+    }, () => {
+        console.log('something wrong with submission')
+    });
 }
 
 function submit(url, assignmentId, taModel, taView, taController) {
@@ -736,8 +814,7 @@ function submit(url, assignmentId, taModel, taView, taController) {
             .append(`Please finish the annotations and submit again (Click instructions for help. Incomplete ones are highlighted above)!`)
             .attr('id', 'submit-error');
         $('#submit').prepend($errorbox);
-    }
-    else {
+    } else {
         const postDict = taModel.annotationDStoPostDict();
         postDict['feedBackText'] = feedBackText;
         // const queryString = $.param(postDict);
@@ -767,7 +844,7 @@ function queryURL(url, name) {
 var taModel, taView, tAWindowView, taController;
 var debug = {};
 var figerPromise, docPromise;
-$(document).ready( function() {
+$(document).ready(function() {
     const docURL = queryURL(window.location.href, 'doc_url');
     const postURL = queryURL(window.location.href, 'post_url');
     const assignmentId = queryURL(window.location.href, 'assignmentId');
@@ -779,10 +856,14 @@ $(document).ready( function() {
 
     console.log(`trying to fetch doc at ${docURL}`);
 
-    $.when( figerPromise, docPromise ).then(
-        ( coarseToFine, docJson ) => {
-
-            taModel = new TAModel(docJson, coarseToFine);
+    $.when(figerPromise, docPromise).then(
+        (typeInfo, docJson) => {
+            // console.log(typeInfo);
+            // console.log(typeInfo["coarseToFine"])
+            // console.log(typeInfo.coarseToFine)
+            var coarseToFine = typeInfo["coarseToFine"];
+            var typeToAlias = typeInfo["typeAlias"];
+            taModel = new TAModel(docJson, coarseToFine, typeToAlias);
             taView = new TAView(taModel);
             taController = new TAController(taModel, taView);
 
@@ -798,7 +879,7 @@ $(document).ready( function() {
             else
                 $('#submit-button').on('click', () => submit(postURL, assignmentId, taModel, taView, taController));
         },
-        () => { 
+        () => {
             //error handling if figer data is not loaded
             console.log(`some error. Sorry couldn't load`)
         }

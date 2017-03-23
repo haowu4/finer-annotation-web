@@ -24,7 +24,7 @@
         "building",
         {
             "parent": null,
-            "alias" : "structure/building/facility",
+            "alias" : "structure / building / facility",
             "is_figer_type": true
         }
     ],
@@ -32,7 +32,7 @@
         "time",
         {
             "parent": null,
-            "alias" : "date/time",
+            "alias" : "date / time",
             "is_figer_type": true
         }
     ],
@@ -40,7 +40,7 @@
         "product",
         {
             "parent": null,
-            "alias" : "product/vehicle/device",
+            "alias" : "product / vehicle / device",
             "is_figer_type": true
         }
     ],
@@ -48,7 +48,7 @@
         "work",
         {
             "parent": null,
-            "alias" : "work(book,art)/creation",
+            "alias" : "creative work",
             "is_figer_type": false
         }
     ],
@@ -70,7 +70,7 @@
         "finance.currency",
         {
             "parent": null,
-            "alias" : "currency/money",
+            "alias" : "currency / money",
             "is_figer_type": true
         }
     ],
@@ -690,7 +690,7 @@
         "ethnicity",
         {
             "parent": null,
-            "alias" : "ethnicity/race/caste",
+            "alias" : "ethnicity / race",
             "is_figer_type": true
         }
     ],

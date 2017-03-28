@@ -1,0 +1,26 @@
+profile-name: 'cogcomp-mturk'
+hit-title: "Identify the type(category) of highlighted mention in text"
+hit-description: "Mention denoting entities such as people (John Smith), locations (USA, Paris) etc. are highlighted and you have indicate which type they are (person, location etc.)"
+hit-keywords: 
+  - "entity"
+  - "text"
+  - "nlp"
+  - "type"
+  - "annotation"
+  - "NER"
+  - "document"
+  - "AI"
+  - "mining"
+# info related to question - ExternalQuestion
+frame-height: 1500
+hit-annotation-base-url: 'https://haowu4.github.io/finer-annotation-web/annotation-interface/type-annotation-interface/'
+hit-reward: .04
+hit-lifetime:
+  days: 3
+  seconds: 0
+hit-duration:
+  hours: 1
+hit-max-assignments: 2
+hit-approval-delay:
+  days: 4
+# add minimum qualification requirements

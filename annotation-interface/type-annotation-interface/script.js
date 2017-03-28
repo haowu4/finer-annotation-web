@@ -874,8 +874,10 @@ $(document).ready(function() {
             // taModel.fineTypeRemoved.attach( (sender, args) => console.log(`fine type removed: ${args.fineType}`) );
             // taModel.fineTypesReset.attach( (sender, args) => console.log(`cleared fine types`) );
 
-            if (assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE')
+            if (assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
                 $('#submit-button').addClass('disabled')
+                $('#instructionsButton').click();
+            }
             else
                 $('#submit-button').on('click', () => submit(postURL, assignmentId, taModel, taView, taController));
         },

@@ -145,8 +145,9 @@ if __name__ == '__main__':
         print('[%3d] posted HIT pointing to %s' % (i, externalQuestionURL))
 
     if include_annotation_urls:
-            print('[%3d] docs have missing annotation urls' %
-                  (annotation_none_errs))
+        print('\n')
+        print('[%3d] docs have missing annotation urls' %
+              (annotation_none_errs))
 
     # all_hits = [hit for hit in connection.get_all_hits()]
 

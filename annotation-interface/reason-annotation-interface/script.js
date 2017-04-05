@@ -209,9 +209,9 @@ class RAView {
         this._attachAnnotationView( mark.$node.closest('div.list-group-item'), annotationInfo );
     }
 
-    unFocus() {
+    unFocus(isDone) {
         if (_.isNil(this.currentFocus)) return;
-        this._setMarkState( this._marksDict[this.currentFocus], MarkStates.UNSELECTED_NOTDONE );
+        this._setMarkState( this._marksDict[this.currentFocus], isDone ? MarkStates.UNSELECTED_DONE : MarkStates.UNSELECTED_NOTDONE );
         this._removeAnnotationView(this._marksDict[this.currentFocus].$node);
         this.currentFocus = null;
     }
@@ -328,7 +328,7 @@ class RAController {
         else {
             const currentFocus = this._raView.currentFocus;
             // unfocus the current thing
-            this._raView.unFocus();
+            this._raView.unFocus(this._isDone(currentFocus));
 
             // clicked on the a new mark, then select it
             if (args.eKey != currentFocus) {
@@ -366,14 +366,19 @@ class RAController {
         });
     }
 
+    _isDone(eKey) {
+        const annotationInfo = this._raModel._annotationDS[eKey]
+        const isDone = _.every(_.values(annotationInfo), reasonObj => {
+            // either type is false or some reason is provided if it's true
+            return (!reasonObj.isTrue) || _.some(_.keys(ReasonsEnum), reasonKey => reasonObj[reasonKey]);
+        });
+        return isDone;
+    }
+
     highlightErrors() {
         let errorMarks = [];
         _.each(this._raModel._annotationDS, (annotationInfo, eKey) => {
-            const isCorrect = _.every(_.values(annotationInfo), reasonObj => {
-                // either type is false or some reason is provided if it's true
-                return (!reasonObj.isTrue) || _.some(_.keys(ReasonsEnum), reasonKey => reasonObj[reasonKey]);
-            });
-            if (!isCorrect) errorMarks.push(this._raView._marksDict[eKey]);
+            if (!this._isDone(eKey)) errorMarks.push(this._raView._marksDict[eKey]);
         });
 
         console.log(_.map(errorMarks, mark => mark.$node.html()));

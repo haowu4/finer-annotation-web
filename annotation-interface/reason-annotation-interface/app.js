@@ -226,9 +226,9 @@ var RAView = function () {
         }
     }, {
         key: 'unFocus',
-        value: function unFocus() {
+        value: function unFocus(isDone) {
             if (_.isNil(this.currentFocus)) return;
-            this._setMarkState(this._marksDict[this.currentFocus], MarkStates.UNSELECTED_NOTDONE);
+            this._setMarkState(this._marksDict[this.currentFocus], isDone ? MarkStates.UNSELECTED_DONE : MarkStates.UNSELECTED_NOTDONE);
             this._removeAnnotationView(this._marksDict[this.currentFocus].$node);
             this.currentFocus = null;
         }
@@ -355,7 +355,7 @@ var RAController = function () {
             } else {
                 var currentFocus = this._raView.currentFocus;
                 // unfocus the current thing
-                this._raView.unFocus();
+                this._raView.unFocus(this._isDone(currentFocus));
 
                 // clicked on the a new mark, then select it
                 if (args.eKey != currentFocus) {
@@ -395,19 +395,25 @@ var RAController = function () {
             });
         }
     }, {
+        key: '_isDone',
+        value: function _isDone(eKey) {
+            var annotationInfo = this._raModel._annotationDS[eKey];
+            var isDone = _.every(_.values(annotationInfo), function (reasonObj) {
+                // either type is false or some reason is provided if it's true
+                return !reasonObj.isTrue || _.some(_.keys(ReasonsEnum), function (reasonKey) {
+                    return reasonObj[reasonKey];
+                });
+            });
+            return isDone;
+        }
+    }, {
         key: 'highlightErrors',
         value: function highlightErrors() {
             var _this5 = this;
 
             var errorMarks = [];
             _.each(this._raModel._annotationDS, function (annotationInfo, eKey) {
-                var isCorrect = _.every(_.values(annotationInfo), function (reasonObj) {
-                    // either type is false or some reason is provided if it's true
-                    return !reasonObj.isTrue || _.some(_.keys(ReasonsEnum), function (reasonKey) {
-                        return reasonObj[reasonKey];
-                    });
-                });
-                if (!isCorrect) errorMarks.push(_this5._raView._marksDict[eKey]);
+                if (!_this5._isDone(eKey)) errorMarks.push(_this5._raView._marksDict[eKey]);
             });
 
             console.log(_.map(errorMarks, function (mark) {

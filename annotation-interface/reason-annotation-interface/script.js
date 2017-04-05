@@ -589,10 +589,10 @@ var debug = {};
 var figerPromise, docPromise, annotationPromise;
 
 $(document).ready(function() {
-    // const docURL = queryURL(window.location.href, 'doc_url');
-    // const annotationURL = queryURL(window.location.href, 'doc_annotation_url');
-    const docURL = 'https://s3.amazonaws.com/finer-annotation/annotation/by_length/23/nw-wsj-10-wsj_1012.v4_gold_conll.json';
-    const annotationURL = '../data-dumps/dump1/nw-wsj-10-wsj_1012.v4_gold_conll.json';
+    const docURL = queryURL(window.location.href, 'doc_url');
+    const annotationURL = queryURL(window.location.href, 'doc_annotation_url');
+    // const docURL = 'https://s3.amazonaws.com/finer-annotation/annotation/by_length/23/nw-wsj-10-wsj_1012.v4_gold_conll.json';
+    // const annotationURL = '../data-dumps/dump1/nw-wsj-10-wsj_1012.v4_gold_conll.json';
     const postURL = queryURL(window.location.href, 'post_url');
     const assignmentId = queryURL(window.location.href, 'assignmentId');
     console.log(`post_url : ${postURL}`);

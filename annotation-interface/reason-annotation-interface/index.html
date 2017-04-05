@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Annotator Interface</title>
+
+    <link rel="stylesheet" type="text/css"
+          href="https://fonts.googleapis.com/css?family=Roboto">
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/css/selectize.bootstrap3.min.css" class="stylesheet">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+  </head>
+  <body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="text-center">Reason Annotatation Task</h1>
+        </div>
+
+        <!-- Trigger the modal with a button -->
+        <button type="button" id="instructionsButton" class="btn btn-info btn-lg" data-toggle="modal" data-target="#instructionsModal">Click for Instructions</button>
+
+        <!-- Modal -->
+        <div id="instructionsModal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Instructions</h4>
+                </div>
+                <div class="modal-body">
+                    <!--<p>Some text in the modal.</p>-->
+                    <ul>
+                        <li>
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Warning!</strong> Please <strong>accept</strong> before starting the annotation.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="alert alert-warning" role="alert">
+                                Please read the instructions carefully especially the description of each reason below.
+                            </div>
+                        </li>
+                        <li>
+                            You will be given a document with each entity (phrase) highlighted. 
+                            Each entity has some "types" associated with them. The goal is to
+                            give the reason behind these types. A sample is shown below.
+                            <!-- <img src="https://s3.amazonaws.com/finer-annotation/type-annotation.png" style="width:100%;"> -->
+                            <br><br>
+                            <div class="list-group-item" id="sentence-0">
+                                <div class="row sentence-list-item sentence-wrapper">
+                                    <!-- <div class="col-xs-1">
+                                        <span class="sentence-list-index">2</span></div> -->
+                                    <div class="col-xs-12 sentence-content"><div><mark data-entity="" class="selected">Thomson Corp. </mark> announced <mark data-entity="">today</mark> that it would be acquiring <mark data-entity="">Mega Corp.</mark> this <mark data-entity>November</mark> .</div></div>
+                                </div>
+                                <br><br>
+                                <div id="annotation-view"><div class="annotation-row row">
+                                        <div class="col-xs-4 type-name-col">organization</div>
+                                        <div class="col-xs-2 is-true-col">
+                                            <div class="toggle btn btn-primary" data-toggle="toggle" style="width: 62px; height: 34px;"><input type="checkbox" checked="" data-toggle="toggle" data-on="Yes" data-off="No"><div class="toggle-group"><label class="btn btn-primary toggle-on">Yes</label><label class="btn btn-default active toggle-off">No</label><span class="toggle-handle btn btn-default"></span></div></div>
+                                        </div>
+                                        <div class="col-xs-6 reasons-col">
+                                            <label class="checkbox-inline"><input type="checkbox" value="sentence context" checked>Sentence Level</label>
+                                            <label class="checkbox-inline"><input type="checkbox" value="document context">Document Level</label>
+                                            <label class="checkbox-inline"><input type="checkbox" value="mention surface" checked>Mention Surface</label>
+                                            <label class="checkbox-inline"><input type="checkbox" value="outside knowledge">Background Knowledge</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <br>
+                        <li>
+                            Click each entity for the above box to show up. The first column has types predicted for this entity.
+                            Some of them are correct and some might be wrong. The second column allows you to tell us whether
+                            the type is correctly predicted or if it is incorrect. Select <strong>Yes</strong> if you
+                            feel the type is correct else <strong>No</strong>.
+                        </li>
+                        <br>
+                        <li>
+                            For <strong>Yes</strong>, you additionally have to provide a reason. The 4 reasons are
+                            <ol>
+                                <br>
+                                <li>
+                                    <strong>Sentence Level:</strong> <br>
+                                    Consider <code>[XXXX] plays in a band.</code>. Here <strong>XXXX</strong> has the type
+                                    <strong>artist</strong> irrespective of what <strong>XXXX</strong> is.
+                                    Another example would be <code>Candidate belonging to [XXXX] won the election</code>. Here <strong>XXXX</strong>
+                                    has a type <strong>political party</strong> (in addition to <strong>organization</strong>).
+                                    The idea is that, even if you hide the entity mention (by say <strong>XXXX</strong>), you should
+                                    be able to say that entity has that type in the sentence by virtue of surrounding sentence context like in the above two examples.
+                                </li>
+                                <br>
+                                <li>
+                                    <strong>Mention Surface:</strong> <br>
+                                    Consider <code>[University of Florida] announced a new director</code>. Here <strong>University of Florida</strong>
+                                    is a <strong>university</strong> only because you see <strong>"University of"</strong> in the mention surface (the text inside the entity highlighted). If you were to replace <strong>University of Florida</strong> with something say <strong>XXXX</strong> making the sentence <code>[XXXX] announced a new director</code>, then <strong>XXXX</strong> wouldn't have the type <strong>university</strong>. 
+                                    The idea here is that the words in the mention (<strong>"University"</strong> in this case), help you determine the type. <br>
+                                    Another example would be <code>[Hoover Dam] is one of the largest man-made creations</code>. Here <strong>Hoover Dam</strong> has the type <strong>dam</strong> because of the word <strong>"Dam"</strong> in the mention.
+                                </li>
+                                <br>
+                                <li>
+                                    <strong>Document Level:</strong> <br>
+                                    Consider the following sentences.<br>
+                                    <code>
+                                    1. Mr. Putin is the visiting Zimbabwe today to meet it's president.<br>
+                                    2. The meeting between [Mugabe] and Putin went very well.
+                                    </code> <br>
+                                    The highlighted entity <strong>Mugabe</strong> is in this context has the type <strong>politician</strong>.
+                                    One can't infer this either from <mark>"Sentence Level"</mark> or <mark>"Mention Surface"</mark>. Here other parts of the document imply he is <strong>politician</strong>. In particular, the fact that Putin
+                                    is meeting Zimbabwe's president in the first sentence imply this. Such examples go under
+                                    <em>Document Level</em>. So the idea here is that the context elsewhere in the document help determine the type of the mention highlighted.
+                                </li>
+                                <br>
+                                <li><strong>Background/Prior Knowledge:</strong> <br>
+                                    Consider, <code>Lot of US manufacturing went to [China] over the past couple of decades</code>.
+                                    Here <strong>China</strong> has the type <strong>country</strong>. But if you were to search wikipedia, you will find that there are lot of towns and cities called China within USA and many other countries in the world. How do we know then, that <strong>China</strong> is a <strong>country</strong>. Let's say nothing in the document reflects that <strong>China</strong> is a <strong>country</strong>. We are actually using our background knowledge to infer this fact. In such cases, it is considered <em>Background Knowledge</em>. Most of the time, we infer locations by <em>Background Knowledge</em> (for instance NY state vs NY city) or when referring to famous people.
+                                    The document doesn't need to explicitly imply the type (as most news articles assume the reader has world knowledge/background knowledge about the entity).
+                                </li>
+                                <br>
+                            </ol>
+                        </li>
+                        <li>For each entity highlighted, if you feel the type is <strong>true</strong>, please provide reason(s) from the list above. Please note that <strong>one or more</strong> of the reasons could be correct. So, you can select more than one reason. See the original example at the beginning. You could say <strong>Thopmson Corp.</strong> is a corporation because it has <strong>Corp.</strong> in it and also by the fact that it is "acquiring" another corporation which would make it a corporation. So both <strong>Mention Surface</strong> and <strong>Sentence Level</strong></li>
+                        <br>
+                        <li><strong>Summary:</strong> (skip if you already understand what the task is) <br>
+                            To summarize, select <strong>Sentence Level</strong> if the you can infer the type of the entity even after replacing it with <strong>XXXX</strong> by using the sentence context. Select <strong>Mention Level</strong> if you cannot infer the type if you replace it with <strong>XXXX</strong> and have to use words in the mention to infer the type. Select <strong>Document Level</strong> if can use other places in the document to infer the type and finally select <strong>Background Knowledge</strong> if you already know the type of the entity from prior/background knowledge.
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+
+            </div>
+        </div>
+              
+
+        <div id="document-header" class="section-header page-header">
+            <h2>Document</h2>
+        </div>
+        <div id="document" class="section-content collapsible-block open-block">
+            <!-- <button id="load-doc" type="button" class="btn btn-default"
+                    style="background-color: inherit" 
+                    onclick="">Load document</button> -->
+            <div id="doc-view"></div>
+        </div>
+        <form>
+            <div style="font-size: 16px" class="form-group">
+                <label for="feedback">Feedback:</label> <br>
+                <!-- <span> (Any feedback less than 250 characters about the task is welcome)</span> -->
+                <span> Relevant useful feedback (not something like a one word "Good" or "Bad") will get you <strong>1 cent bonus</strong> 💥 </span>
+                <textarea class="form-control" rows="5" id="feedback" maxlength="250"></textarea>
+            </div>
+        </form>
+        <div id="submit">
+            <button type="button" id="submit-button" class="btn btn-primary" aria-label="Left Align">
+                <span class="glyphicon" aria-hidden="true">Submit</span>
+            </button>
+        </div>
+
+        <form id="submit-form" action="http://localhost:8080" method="POST" style="visibility: hidden">
+            <input type="text" name="assignmentId" value="" />
+            <input type="text" name="data" value="" /> 
+            <input type="submit" />
+        </form>
+
+    </div>
+
+    <!-- Templates -->
+    <template id="sentence-template">
+        <div class="row sentence-list-item sentence-wrapper">
+            <div class="col-xs-1">
+                <span class="sentence-list-index"></span></div>
+            <div class="col-xs-11 sentence-content"></div>
+        </div>
+        <div class="row annotaion-wrapper">
+        </div>
+    </template>
+
+    <template id="annotation-row-template">
+        <div class="annotation-row row">
+            <div class="col-xs-4 type-name-col"></div>
+            <div class="col-xs-2 is-true-col">
+                <input type="checkbox" checked data-toggle="toggle" data-on="Yes" data-off="No">
+            </div>
+            <div class="col-xs-6 reasons-col">
+                <label class="checkbox-inline"><input type="checkbox" value="sentence context">Sentence Level</label>
+                <label class="checkbox-inline"><input type="checkbox" value="document context">Document Level</label>
+                <label class="checkbox-inline"><input type="checkbox" value="mention surface">Mention Surface</label>
+                <label class="checkbox-inline"><input type="checkbox" value="outside knowledge">Background Knowledge</label>
+            </div>
+        </div>
+    </template>
+
+    <template id="info-template">
+        <div class="alert alert-warning" role="alert">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <span class="sr-only">Info:</span>
+        </div>
+    </template>
+
+    <template id="error-template">
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+        </div>
+    </template>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!--<script src="https://fastcdn.org/Underscore.js/1.8.3/underscore-min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <script type="text/javascript" src="app.js" defer></script>
+    <!-- <script type="text/javascript" src="script.js" defer></script> -->
+
+
+  </body>
+</html>

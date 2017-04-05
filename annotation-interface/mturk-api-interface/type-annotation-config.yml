@@ -1,5 +1,5 @@
 profile-name: 'cogcomp-mturk'
-hit-title: "Identify the type(category) of highlighted mention in text"
+hit-title: "Identify the type(category) of highlighted mention in text - quick approval"
 hit-description: "Mention denoting entities such as people (John Smith), locations (USA, Paris) etc. are highlighted and you have indicate which type they are (person, location etc.)"
 hit-keywords: 
   - "entity"
@@ -14,13 +14,16 @@ hit-keywords:
 # info related to question - ExternalQuestion
 frame-height: 1500
 hit-annotation-base-url: 'https://haowu4.github.io/finer-annotation-web/annotation-interface/type-annotation-interface/'
-hit-reward: .04
+hit-reward: .10
 hit-lifetime:
   days: 3
   seconds: 0
 hit-duration:
-  hours: 1
+  minutes: 30
 hit-max-assignments: 2
 hit-approval-delay:
   days: 4
+s3-profile-name: 'cogcomp'
+s3-bucket: 'finer-annotation'
+s3-docbylength-prefix: 'annotation/by_length'
 # add minimum qualification requirements

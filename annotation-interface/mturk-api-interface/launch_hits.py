@@ -13,6 +13,7 @@ from boto.mturk.question import ExternalQuestion
 from boto.mturk.price import Price
 
 from utils import extract_doc_url_paths_of_length
+from utils import extract_annotation_url_paths_for_doc_urls
 
 
 if __name__ == '__main__':
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--config', '-c', required=True, type=str,
                         help='path to config yaml file')
     parser.add_argument('--entity-lengths', '-l', required=True, type=int,
-                        nargs='+',
+                        nargs=2,
                         help='selects documents with #entities in the \
                               list provided',
                         dest='num_ents_list')
@@ -31,11 +32,15 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', '-v', action='store_true',
                         dest='verbose')
     parser.add_argument('--max-docs-per-length', '-m', type=int,
-                        default=10,
+                        default=-1,
                         dest='max_docs',
                         help='maximum number of documents per #entities \
                               provided in --entity-lengths')
     args = parser.parse_args()
+
+    assert args.num_ents_list[1] >= args.num_ents_list[0], 'high < low'
+    args.num_ents_list = [i for i in xrange(args.num_ents_list[0],
+                                            args.num_ents_list[1] + 1)]
 
     if args.verbose:
         print('args:')
@@ -44,6 +49,8 @@ if __name__ == '__main__':
 
     with codecs.open(args.config, mode='rb', encoding='utf-8') as f_in:
         config = yaml.load(f_in.read())
+
+    include_annotation_urls = 's3-doc-annotation-prefix' in config
 
     if args.verbose:
         print('config from %s:' % (args.config))
@@ -69,20 +76,51 @@ if __name__ == '__main__':
     else:
         print('successfully established connection to api\n')
 
-    doc_url_paths = [url for num_ents in args.num_ents_list
-                     for url in
-                     extract_doc_url_paths_of_length(num_ents)[:args.max_docs]]
+    doc_urls = []
+    for num_ents in args.num_ents_list:
+        urls = extract_doc_url_paths_of_length(
+            num_ents,
+            bucket_name=config['s3-bucket'],
+            prefix=config['s3-docbylength-prefix'],
+            profile_name=config['s3-profile-name']
+        )
+        if args.max_docs > 0:
+            urls = extract_doc_url_paths_of_length(num_ents)[:args.max_docs]
+        doc_urls.extend(urls)
 
-    annotation_url = config['hit-annotation-base-url']
+    if include_annotation_urls:
+        doc_annotation_urls = extract_annotation_url_paths_for_doc_urls(
+            doc_urls,
+            bucket_name=config['s3-bucket'],
+            prefix=config['s3-doc-annotation-prefix'],
+            profile_name=config['s3-profile-name']
+        )
+    else:
+        doc_annotation_urls = [None] * len(doc_urls)
 
-    print('fetched %d urls satisfying constraints\n' % (len(doc_url_paths)))
-    # print json.dumps(doc_url_paths, indent=4)
+    hit_annotation_base_url = config['hit-annotation-base-url']
 
-    for i, doc_url_path in enumerate(doc_url_paths, 1):
+    print('fetched %d urls satisfying constraints\n' % (len(doc_urls)))
+    # print json.dumps(doc_urls, indent=4)
 
-        url_parts = list(urlparse.urlparse(annotation_url))
+    annotation_none_errs = 0
+    for i, (doc_url, doc_annotation_url) in \
+            enumerate(zip(doc_urls, doc_annotation_urls), 1):
+
+        url_parts = list(urlparse.urlparse(hit_annotation_base_url))
         query = dict(urlparse.parse_qsl(url_parts[4]))
-        query.update({'post_url': post_url, 'doc_url': doc_url_path})
+        if include_annotation_urls:
+            if doc_annotation_url is None:
+                annotation_none_errs += 1
+                continue
+            query.update(
+                {'post_url': post_url,
+                 'doc_url': doc_url,
+                 'doc_annotation_url': doc_annotation_url})
+        else:
+            query.update(
+                {'post_url': post_url,
+                 'doc_url': doc_url})
         url_parts[4] = urlencode(query)
 
         externalQuestionURL = urlparse.urlunparse(url_parts)
@@ -105,6 +143,10 @@ if __name__ == '__main__':
         )
 
         print('[%3d] posted HIT pointing to %s' % (i, externalQuestionURL))
+
+    if include_annotation_urls:
+            print('[%3d] docs have missing annotation urls' %
+                  (annotation_none_errs))
 
     # all_hits = [hit for hit in connection.get_all_hits()]
 
